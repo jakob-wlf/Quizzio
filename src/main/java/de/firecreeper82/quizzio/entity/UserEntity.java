@@ -1,46 +1,33 @@
 package de.firecreeper82.quizzio.entity;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
-@SuppressWarnings("unused")
 @Entity
 public class UserEntity {
     @Id
-    @GeneratedValue(strategy= GenerationType.AUTO)
-    private Integer id;
-    private String firstName;
-    private String lastName;
+    private String userId;
+    private String username;
     private String email;
 
-    public Integer getId() {
-        return id;
+    public String getUserId() {
+        return userId;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String name) {
-        this.firstName = name;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
+    public String getUsername() {
+        return username;
     }
 
     public String getEmail() {
         return email;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public void setEmail(String email) {

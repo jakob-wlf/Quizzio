@@ -1,38 +1,43 @@
 package de.firecreeper82.quizzio.controller;
 
 import de.firecreeper82.quizzio.entity.UserEntity;
+import de.firecreeper82.quizzio.exception.QuizzioException;
 import de.firecreeper82.quizzio.model.UserResponse;
 import de.firecreeper82.quizzio.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-@Controller
+@RestController
 public class UserController {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+
+    public UserController(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @PostMapping(path="/users/add")
-    public @ResponseBody UserResponse addNewUser (@RequestParam String firstName, @RequestParam String lastName, @RequestParam String email) {
+    public @ResponseBody UserResponse createUser (@RequestParam String userId, @RequestParam String userName, @RequestParam String email) throws QuizzioException {
+
+        if(userRepository.findById(userId).isPresent()) {
+            throw new QuizzioException("This userid already exists.", HttpStatus.BAD_REQUEST);
+        }
 
         UserEntity user = new UserEntity();
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
+        user.setUserId(userId);
+        user.setUsername(userName);
         user.setEmail(email);
         userRepository.save(user);
 
         return new UserResponse(
-                user.getId(),
-                user.getFirstName(),
-                user.getLastName(),
+                user.getUserId(),
+                user.getUsername(),
                 user.getEmail()
         );
     }
@@ -48,9 +53,8 @@ public class UserController {
 
     private UserResponse mapToResponse(UserEntity entity) {
         return new UserResponse(
-                entity.getId(),
-                entity.getFirstName(),
-                entity.getLastName(),
+                entity.getUserId(),
+                entity.getUsername(),
                 entity.getEmail()
         );
     }
