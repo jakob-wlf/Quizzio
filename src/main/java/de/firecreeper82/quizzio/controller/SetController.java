@@ -5,6 +5,7 @@ import de.firecreeper82.quizzio.entity.SetEntity;
 import de.firecreeper82.quizzio.exception.QuizzioException;
 import de.firecreeper82.quizzio.model.FlashcardResponse;
 import de.firecreeper82.quizzio.model.SetResponse;
+import de.firecreeper82.quizzio.model.UserResponse;
 import de.firecreeper82.quizzio.repository.FlashcardRepository;
 import de.firecreeper82.quizzio.repository.SetRepository;
 import de.firecreeper82.quizzio.repository.UserRepository;
@@ -45,13 +46,34 @@ public class SetController {
         );
     }
 
+    @PutMapping("/sets/{id}")
+    public @ResponseBody SetResponse changeSet(@PathVariable String id, @RequestParam(required = false) String name) throws QuizzioException {
+        SetEntity entity = setRepository.findById(id).orElseThrow(() -> new QuizzioException("The Set with id " + id + " could not been found.", HttpStatus.BAD_REQUEST));
+        if(name != null)
+            entity.setName(name);
+        setRepository.save(entity);
+        return createSetResponse(entity);
+    }
+
+    @DeleteMapping("/sets/{id}")
+    public @ResponseBody HttpStatus deleteSet(@PathVariable String id) throws QuizzioException {
+        SetEntity entity = setRepository.findById(id).orElseThrow(() -> new QuizzioException("The Set with id " + id + " could not been found.", HttpStatus.BAD_REQUEST));
+
+        flashcardRepository
+                .deleteAll(flashcardRepository
+                .findAllBySetId(entity.getId()));
+
+        setRepository.delete(entity);
+        return HttpStatus.OK;
+    }
+
     @GetMapping("/sets/{id}")
     public @ResponseBody SetResponse getSetById(@PathVariable String id) throws QuizzioException {
         SetEntity entity = setRepository.findById(id).orElseThrow(() -> new QuizzioException("The Set with id " + id + " could not been found.", HttpStatus.BAD_REQUEST));
         return createSetResponse(entity);
     }
 
-    public SetResponse createSetResponse(SetEntity entity) {
+    public @ResponseBody SetResponse createSetResponse(SetEntity entity) {
         List<FlashcardResponse> flashcards = flashcardRepository
                 .findAllBySetId(entity.getId())
                 .stream()

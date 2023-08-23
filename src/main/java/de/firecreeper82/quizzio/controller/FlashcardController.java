@@ -26,7 +26,7 @@ public class FlashcardController {
     }
 
     @PostMapping("/flashcards/add/{setId}")
-    public SetResponse createFlashcard(@RequestParam String key, @RequestParam String value, @PathVariable String setId) throws QuizzioException {
+    public @ResponseBody SetResponse createFlashcard(@RequestParam String key, @RequestParam String value, @PathVariable String setId) throws QuizzioException {
         FlashcardEntity entity = new FlashcardEntity();
         entity.setId(UUID.randomUUID().toString());
         entity.setCardKey(key);
@@ -40,11 +40,11 @@ public class FlashcardController {
     }
 
     @PutMapping("/flashcards/{id}")
-    public SetResponse changeFlashcard(@PathVariable String id, @RequestParam(required = false) String key, @RequestParam(required = false) String value) throws QuizzioException {
+    public @ResponseBody SetResponse changeFlashcard(@PathVariable String id, @RequestParam(required = false) String key, @RequestParam(required = false) String value) throws QuizzioException {
         FlashcardEntity flashcard = flashcardRepository.findById(id).orElseThrow(() -> new QuizzioException("The Flashcard with id " + id + "could not been found", HttpStatus.BAD_REQUEST));
-        if(key != null)
+        if (key != null)
             flashcard.setCardKey(key);
-        if(value != null)
+        if (value != null)
             flashcard.setCardValue(value);
 
         SetEntity setEntity = setRepository.findById(flashcard.getSetId()).orElseThrow(() -> new QuizzioException("The Set with id " + flashcard.getSetId() + " could not been found.", HttpStatus.BAD_REQUEST));
@@ -54,14 +54,13 @@ public class FlashcardController {
     }
 
     @DeleteMapping("/flashcards/{id}")
-    public SetResponse deleteFlashCard(@PathVariable String id) throws QuizzioException {
+    public @ResponseBody SetResponse deleteFlashCard(@PathVariable String id) throws QuizzioException {
         FlashcardEntity flashcard = flashcardRepository.findById(id).orElseThrow(() -> new QuizzioException("The Flashcard with id " + id + "could not been found", HttpStatus.BAD_REQUEST));
 
         SetEntity setEntity = setRepository.findById(flashcard.getSetId()).orElseThrow(() -> new QuizzioException("The Set with id " + flashcard.getSetId() + " could not been found.", HttpStatus.BAD_REQUEST));
         flashcardRepository.delete(flashcard);
 
         return setController.createSetResponse(setEntity);
-
     }
 
     private FlashcardResponse mapToResponse(FlashcardEntity entity) {
