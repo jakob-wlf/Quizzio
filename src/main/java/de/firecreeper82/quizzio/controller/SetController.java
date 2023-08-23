@@ -1,5 +1,6 @@
 package de.firecreeper82.quizzio.controller;
 
+import de.firecreeper82.quizzio.entity.FlashcardEntity;
 import de.firecreeper82.quizzio.entity.SetEntity;
 import de.firecreeper82.quizzio.exception.QuizzioException;
 import de.firecreeper82.quizzio.model.FlashcardResponse;
@@ -34,7 +35,7 @@ public class SetController {
         entity.setId(UUID.randomUUID().toString());
         entity.setUserId(userId);
 
-        userRepository.findById(userId).orElseThrow(() -> new QuizzioException("The user with id " + userId + " could not been found.", HttpStatus.BAD_REQUEST));
+        userRepository.findById(userId).orElseThrow(() -> new QuizzioException("The User with id " + userId + " could not been found.", HttpStatus.BAD_REQUEST));
         setRepository.save(entity);
 
         return new SetResponse(
@@ -46,18 +47,15 @@ public class SetController {
 
     @GetMapping("/sets/{id}")
     public @ResponseBody SetResponse getSetById(@PathVariable String id) throws QuizzioException {
-        SetEntity entity = setRepository.findById(id).orElseThrow(() -> new QuizzioException("The set with id " + id + " could not been found.", HttpStatus.BAD_REQUEST));
-        return createSetResponse(entity, flashcardRepository);
+        SetEntity entity = setRepository.findById(id).orElseThrow(() -> new QuizzioException("The Set with id " + id + " could not been found.", HttpStatus.BAD_REQUEST));
+        return createSetResponse(entity);
     }
 
-    public static SetResponse createSetResponse(SetEntity entity, FlashcardRepository flashcardRepository) {
+    public SetResponse createSetResponse(SetEntity entity) {
         List<FlashcardResponse> flashcards = flashcardRepository
                 .findAllBySetId(entity.getId())
                 .stream()
-                .map(flashcardEntity -> new FlashcardResponse(
-                        flashcardEntity.getId(),
-                        flashcardEntity.getCardKey(),
-                        flashcardEntity.getCardValue()))
+                .map(this::mapToResponse)
                 .toList();
 
         return new SetResponse(
@@ -65,5 +63,12 @@ public class SetController {
                 entity.getName(),
                 flashcards
         );
+    }
+
+    private FlashcardResponse mapToResponse(FlashcardEntity flashcardEntity) {
+        return new FlashcardResponse(
+                flashcardEntity.getId(),
+                flashcardEntity.getCardKey(),
+                flashcardEntity.getCardValue());
     }
 }
