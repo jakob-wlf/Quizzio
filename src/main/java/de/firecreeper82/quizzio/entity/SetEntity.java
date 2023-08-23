@@ -1,6 +1,7 @@
 package de.firecreeper82.quizzio.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 
 @Entity
 public class SetEntity {

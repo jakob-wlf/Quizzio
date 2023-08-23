@@ -2,7 +2,7 @@ package de.firecreeper82.quizzio.exception;
 
 import org.springframework.http.HttpStatus;
 
-public class QuizzioException extends Exception{
+public class QuizzioException extends Exception {
 
     private final String message;
     private final HttpStatus statusCode;

@@ -1,6 +1,5 @@
 package de.firecreeper82.quizzio.controller;
 
-import de.firecreeper82.quizzio.entity.FlashcardEntity;
 import de.firecreeper82.quizzio.entity.SetEntity;
 import de.firecreeper82.quizzio.exception.QuizzioException;
 import de.firecreeper82.quizzio.model.FlashcardResponse;

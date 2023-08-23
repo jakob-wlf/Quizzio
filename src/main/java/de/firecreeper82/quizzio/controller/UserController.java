@@ -4,9 +4,7 @@ import de.firecreeper82.quizzio.entity.UserEntity;
 import de.firecreeper82.quizzio.exception.QuizzioException;
 import de.firecreeper82.quizzio.model.UserResponse;
 import de.firecreeper82.quizzio.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,10 +20,10 @@ public class UserController {
         this.userRepository = userRepository;
     }
 
-    @PostMapping(path="/users/add")
-    public @ResponseBody UserResponse createUser (@RequestParam String userId, @RequestParam String userName, @RequestParam String email) throws QuizzioException {
+    @PostMapping(path = "/users/add")
+    public @ResponseBody UserResponse createUser(@RequestParam String userId, @RequestParam String userName, @RequestParam String email) throws QuizzioException {
 
-        if(userRepository.findById(userId).isPresent()) {
+        if (userRepository.findById(userId).isPresent()) {
             throw new QuizzioException("This userid already exists.", HttpStatus.BAD_REQUEST);
         }
 
@@ -42,7 +40,7 @@ public class UserController {
         );
     }
 
-    @GetMapping(path="/users/all")
+    @GetMapping(path = "/users/all")
     public @ResponseBody List<UserResponse> getAllUsers() {
         Iterable<UserEntity> userEntities = userRepository.findAll();
         return StreamSupport

@@ -6,4 +6,5 @@ public record SetResponse(
         String id,
         String name,
         List<FlashcardResponse> cards
-) { }
+) {
+}
