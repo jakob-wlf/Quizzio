@@ -1,5 +1,6 @@
 package de.firecreeper82.quizzio.service;
 
+import de.firecreeper82.quizzio.data.AccountStatus;
 import de.firecreeper82.quizzio.entity.AccountEntity;
 import de.firecreeper82.quizzio.exception.QuizzioException;
 import de.firecreeper82.quizzio.model.CredentialsResponse;
@@ -14,11 +15,13 @@ public class AccountService {
     private final AccountRepository accountRepository;
     private final RegexService regexService;
     private final SecurityService securityService;
+    private final VerificationService verificationService;
 
-    public AccountService(AccountRepository accountRepository, RegexService regexService, SecurityService securityService) {
+    public AccountService(AccountRepository accountRepository, RegexService regexService, SecurityService securityService, VerificationService verificationService) {
         this.accountRepository = accountRepository;
         this.regexService = regexService;
         this.securityService = securityService;
+        this.verificationService = verificationService;
     }
 
     public void createAccount(AccountCreateRequest request) throws QuizzioException {
@@ -44,10 +47,11 @@ public class AccountService {
         entity.setPassword(credentials.hashedPassword());
         entity.setDisplayName(request.displayName());
         entity.setEmail(request.email());
+        entity.setStatus(AccountStatus.UNVERIFIED);
         entity.setSalt(credentials.salt());
 
         accountRepository.save(entity);
+
+        verificationService.createVerification(entity.getUserName());
     }
-
-
 }

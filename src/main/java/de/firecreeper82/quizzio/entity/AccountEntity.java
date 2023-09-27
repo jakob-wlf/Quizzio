@@ -1,5 +1,6 @@
 package de.firecreeper82.quizzio.entity;
 
+import de.firecreeper82.quizzio.data.AccountStatus;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 
@@ -10,6 +11,7 @@ public class AccountEntity {
     String displayName;
     String password;
     String email;
+    AccountStatus status;
     byte[ ] salt;
 
     public String getUserName() {
@@ -36,19 +38,27 @@ public class AccountEntity {
         this.password = password;
     }
 
-    public byte[] getSalt() {
-        return salt;
-    }
-
-    public void setSalt(byte[] salt) {
-        this.salt = salt;
-    }
-
     public String getEmail() {
         return email;
     }
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public AccountStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(AccountStatus status) {
+        this.status = status;
+    }
+
+    public byte[] getSalt() {
+        return salt;
+    }
+
+    public void setSalt(byte[] salt) {
+        this.salt = salt;
     }
 }

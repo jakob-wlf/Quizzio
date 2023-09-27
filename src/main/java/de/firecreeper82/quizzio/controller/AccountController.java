@@ -12,6 +12,7 @@ import de.firecreeper82.quizzio.request.AccountCreateRequest;
 import de.firecreeper82.quizzio.service.AccountService;
 import de.firecreeper82.quizzio.service.SessionService;
 import de.firecreeper82.quizzio.service.SetService;
+import de.firecreeper82.quizzio.service.VerificationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -28,14 +29,16 @@ public class AccountController {
     private final SessionRepository sessionRepository;
     private final SetRepository setRepository;
     private final SetService setService;
+    private final VerificationService verificationService;
 
-    public AccountController(AccountService accountService, SessionService sessionService, AccountRepository accountRepository, SessionRepository sessionRepository, SetRepository setRepository, SetService setService) {
+    public AccountController(AccountService accountService, SessionService sessionService, AccountRepository accountRepository, SessionRepository sessionRepository, SetRepository setRepository, SetService setService, VerificationService verificationService) {
         this.accountService = accountService;
         this.sessionService = sessionService;
         this.accountRepository = accountRepository;
         this.sessionRepository = sessionRepository;
         this.setRepository = setRepository;
         this.setService = setService;
+        this.verificationService = verificationService;
     }
 
     @PostMapping("/accounts/create")
@@ -70,8 +73,23 @@ public class AccountController {
         return ResponseEntity.status(HttpStatus.CREATED).body("Logged out successfully.");
     }
 
+    @PostMapping("/sessions/{sessionId}/verify/{verificationCode}")
+    public @ResponseBody AccountResponse verifyAccount(@PathVariable String sessionId, @PathVariable String verificationCode) throws QuizzioException {
+        return mapToResponse(verificationService.verifyAccount(sessionId, verificationCode));
+    }
+
+    @GetMapping("/accounts/{accountId}")
+    public @ResponseBody AccountResponse getAccountInformation(@PathVariable String accountId) throws QuizzioException {
+        AccountEntity entity = accountRepository
+                .findById(accountId)
+                .orElseThrow(() ->
+                        new QuizzioException("User with username " + accountId + " not found.", HttpStatus.NOT_FOUND));
+
+        return mapToResponse(entity);
+    }
+
     @GetMapping("/sessions/{sessionId}")
-    public @ResponseBody AccountResponse getAccount(@PathVariable String sessionId) throws QuizzioException {
+    public @ResponseBody AccountResponse getSessionInformation(@PathVariable String sessionId) throws QuizzioException {
         SessionEntity session = sessionRepository
                 .findById(sessionId)
                 .orElseThrow(() ->
@@ -92,6 +110,7 @@ public class AccountController {
                 entity.getUserName(),
                 entity.getDisplayName(),
                 entity.getEmail(),
+                entity.getStatus(),
                 setRepository.findAllByUserId(entity.getUserName())
                         .stream()
                         .map(setService::createSetResponse)
