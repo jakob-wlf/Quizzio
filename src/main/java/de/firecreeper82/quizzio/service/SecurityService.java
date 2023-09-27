@@ -1,5 +1,6 @@
 package de.firecreeper82.quizzio.service;
 
+import de.firecreeper82.quizzio.entity.AccountEntity;
 import de.firecreeper82.quizzio.exception.QuizzioException;
 import de.firecreeper82.quizzio.model.CredentialsResponse;
 import org.springframework.http.HttpStatus;
@@ -9,7 +10,7 @@ import org.apache.commons.codec.binary.Hex;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.HashMap;
+import java.util.UUID;
 
 @Service
 public class SecurityService {
@@ -34,6 +35,13 @@ public class SecurityService {
         }
     }
 
+    public boolean verifyCredentials(AccountEntity entity, String password) throws QuizzioException {
+        byte[] salt = entity.getSalt();
+        String hashedPassword = hashPassword(password, salt);
+
+        return (hashedPassword.equals(entity.getPassword()));
+    }
+
     public CredentialsResponse createCredentials(String password) throws QuizzioException {
         try {
             byte[] salt = generateSalt();
@@ -47,5 +55,9 @@ public class SecurityService {
         } catch(QuizzioException e) {
             throw new QuizzioException("Failed to create credentials", HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    public String generateId() {
+        return UUID.randomUUID().toString();
     }
 }
