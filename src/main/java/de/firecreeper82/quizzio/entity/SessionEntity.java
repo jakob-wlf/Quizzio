@@ -7,8 +7,8 @@ import jakarta.persistence.Id;
 public class SessionEntity {
 
     @Id
-    private String accountId;
     private String sessionId;
+    private String accountId;
 
     public String getAccountId() {
         return accountId;

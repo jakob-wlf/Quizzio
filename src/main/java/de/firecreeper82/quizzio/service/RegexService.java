@@ -10,7 +10,7 @@ public class RegexService {
     private final String EMAIL_REGEX;
 
     public RegexService() {
-        USERNAME_REGEX = "^[a-zA-Z0-9]{4,24}$";
+        USERNAME_REGEX = "^[a-zA-Z0-9]([._-](?![._-])|[a-zA-Z0-9]){3,18}[a-zA-Z0-9]$";
         PASSWORD_REGEX = "^(?=.*[A-Za-z])(?=.*\\d)[a-zA-Z\\d\\w\\W]{8,256}$";
         EMAIL_REGEX = "^([a-zA-Z0-9_\\-.]+)@([a-zA-Z0-9_\\-]+)(\\.[a-zA-Z]{2,5}){1,2}$";
     }

@@ -3,13 +3,10 @@ package de.firecreeper82.quizzio.service;
 import de.firecreeper82.quizzio.entity.AccountEntity;
 import de.firecreeper82.quizzio.exception.QuizzioException;
 import de.firecreeper82.quizzio.model.CredentialsResponse;
-import de.firecreeper82.quizzio.model.UserResponse;
 import de.firecreeper82.quizzio.repository.AccountRepository;
 import de.firecreeper82.quizzio.request.AccountCreateRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
-import java.util.HashMap;
 
 @Service
 public class AccountService {

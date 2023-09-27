@@ -27,7 +27,7 @@ public class SessionService {
         AccountEntity entity = accountRepository
                 .findById(userName)
                 .orElseThrow(() ->
-                new QuizzioException("User with username " + userName + " could not been found.", HttpStatus.NOT_FOUND));
+                new QuizzioException("User with username " + userName + " not found.", HttpStatus.NOT_FOUND));
 
         if(!securityService.verifyCredentials(entity, password))
             throw new QuizzioException("Invalid Credentials.", HttpStatus.UNAUTHORIZED);
@@ -51,5 +51,14 @@ public class SessionService {
                 entity.getAccountId(),
                 entity.getSessionId()
         );
+    }
+
+    public void logout(String sessionId) throws QuizzioException{
+        SessionEntity entity = sessionRepository
+                .findById(sessionId)
+                .orElseThrow(() ->
+                        new QuizzioException("Session with id " + sessionId + " not found.", HttpStatus.NOT_FOUND));
+
+        sessionRepository.delete(entity);
     }
 }

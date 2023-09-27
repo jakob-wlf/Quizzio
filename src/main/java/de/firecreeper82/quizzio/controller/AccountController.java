@@ -1,35 +1,41 @@
 package de.firecreeper82.quizzio.controller;
 
-import de.firecreeper82.quizzio.data.ResponseStatus;
 import de.firecreeper82.quizzio.entity.AccountEntity;
+import de.firecreeper82.quizzio.entity.SessionEntity;
 import de.firecreeper82.quizzio.exception.QuizzioException;
 import de.firecreeper82.quizzio.model.AccountResponse;
 import de.firecreeper82.quizzio.model.SessionResponse;
 import de.firecreeper82.quizzio.repository.AccountRepository;
+import de.firecreeper82.quizzio.repository.SessionRepository;
+import de.firecreeper82.quizzio.repository.SetRepository;
 import de.firecreeper82.quizzio.request.AccountCreateRequest;
 import de.firecreeper82.quizzio.service.AccountService;
-import de.firecreeper82.quizzio.service.ResponseService;
 import de.firecreeper82.quizzio.service.SessionService;
+import de.firecreeper82.quizzio.service.SetService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 public class AccountController {
 
     private final AccountService accountService;
-    private final ResponseService responseService;
     private final SessionService sessionService;
     private final AccountRepository accountRepository;
+    private final SessionRepository sessionRepository;
+    private final SetRepository setRepository;
+    private final SetService setService;
 
-    public AccountController(AccountService accountService, ResponseService responseService, SessionService sessionService, AccountRepository accountRepository) {
+    public AccountController(AccountService accountService, SessionService sessionService, AccountRepository accountRepository, SessionRepository sessionRepository, SetRepository setRepository, SetService setService) {
         this.accountService = accountService;
-        this.responseService = responseService;
         this.sessionService = sessionService;
         this.accountRepository = accountRepository;
+        this.sessionRepository = sessionRepository;
+        this.setRepository = setRepository;
+        this.setService = setService;
     }
 
     @PostMapping("/accounts/create")
@@ -49,8 +55,7 @@ public class AccountController {
                 ));
 
 
-        String response = responseService.createJsonResponse(ResponseStatus.SUCCESS, "Account created successfully");
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Account created successfully.");
     }
 
     @PostMapping("/accounts/login")
@@ -58,12 +63,26 @@ public class AccountController {
         return sessionService.login(userName, password);
     }
 
-    @GetMapping("/accounts/{username}")
-    public @ResponseBody AccountResponse getAccount(@PathVariable String username) throws QuizzioException {
-        AccountEntity entity = accountRepository
-                .findById(username)
+    @PostMapping("/accounts/logout/{sessionId}")
+    public ResponseEntity<String> logout(@PathVariable String sessionId) throws QuizzioException {
+        sessionService.logout(sessionId);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body("Logged out successfully.");
+    }
+
+    @GetMapping("/sessions/{sessionId}")
+    public @ResponseBody AccountResponse getAccount(@PathVariable String sessionId) throws QuizzioException {
+        SessionEntity session = sessionRepository
+                .findById(sessionId)
                 .orElseThrow(() ->
-                        new QuizzioException("User with username " + username + " could not been found.", HttpStatus.NOT_FOUND));
+                        new QuizzioException("Session with id " + sessionId + " not found.", HttpStatus.NOT_FOUND));
+
+        String accountId = session.getAccountId();
+
+        AccountEntity entity = accountRepository
+                .findById(accountId)
+                .orElseThrow(() ->
+                        new QuizzioException("User with username " + accountId + " not found.", HttpStatus.NOT_FOUND));
 
         return mapToResponse(entity);
     }
@@ -73,7 +92,10 @@ public class AccountController {
                 entity.getUserName(),
                 entity.getDisplayName(),
                 entity.getEmail(),
-                List.of()
+                setRepository.findAllByUserId(entity.getUserName())
+                        .stream()
+                        .map(setService::createSetResponse)
+                        .collect(Collectors.toList())
         );
     }
 

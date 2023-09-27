@@ -3,10 +3,10 @@ package de.firecreeper82.quizzio.service;
 import de.firecreeper82.quizzio.entity.AccountEntity;
 import de.firecreeper82.quizzio.exception.QuizzioException;
 import de.firecreeper82.quizzio.model.CredentialsResponse;
+import org.apache.commons.codec.binary.Hex;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import org.apache.commons.codec.binary.Hex;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
