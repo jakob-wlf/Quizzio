@@ -1,6 +1,5 @@
 package de.firecreeper82.quizzio.exception;
 
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -13,7 +12,7 @@ import java.io.StringWriter;
 public class ApiExceptionHandler {
 
     @ExceptionHandler
-    public ResponseEntity<ErrorInfo> handleErrors(HttpServletRequest request, Throwable exception) {
+    public ResponseEntity<ErrorInfo> handleErrors(Throwable exception) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         exception.printStackTrace(pw);

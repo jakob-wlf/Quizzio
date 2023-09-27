@@ -9,5 +9,5 @@ import java.util.List;
 public interface FlashcardRepository extends CrudRepository<FlashcardEntity, String> {
 
     @Query("SELECT e FROM FlashcardEntity e WHERE e.setId = :setId")
-    public List<FlashcardEntity> findAllBySetId(String setId);
+    List<FlashcardEntity> findAllBySetId(String setId);
 }

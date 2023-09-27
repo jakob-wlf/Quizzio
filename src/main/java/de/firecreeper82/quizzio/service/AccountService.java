@@ -31,10 +31,10 @@ public class AccountService {
         if(!regexService.isValidPassword(request.password()))
             throw new QuizzioException("Invalid password.", HttpStatus.BAD_REQUEST);
 
-        if(!regexService.isValidUsername(request.userName()))
+        if(regexService.isInvalidUsername(request.userName()))
             throw new QuizzioException("Invalid username.", HttpStatus.BAD_REQUEST);
 
-        if(!regexService.isValidUsername(request.displayName()))
+        if(regexService.isInvalidUsername(request.displayName()))
             throw new QuizzioException("Invalid display name.", HttpStatus.BAD_REQUEST);
 
         CredentialsResponse credentials = securityService.createCredentials(request.password());

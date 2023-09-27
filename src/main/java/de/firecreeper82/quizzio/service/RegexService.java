@@ -15,8 +15,8 @@ public class RegexService {
         EMAIL_REGEX = "^([a-zA-Z0-9_\\-.]+)@([a-zA-Z0-9_\\-]+)(\\.[a-zA-Z]{2,5}){1,2}$";
     }
 
-    public boolean isValidUsername(String username) {
-        return username.matches(USERNAME_REGEX);
+    public boolean isInvalidUsername(String username) {
+        return !username.matches(USERNAME_REGEX);
     }
 
     public boolean isValidPassword(String password) {
