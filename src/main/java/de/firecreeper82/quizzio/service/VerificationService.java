@@ -1,5 +1,6 @@
 package de.firecreeper82.quizzio.service;
 
+import com.mailjet.client.errors.MailjetException;
 import de.firecreeper82.quizzio.data.AccountStatus;
 import de.firecreeper82.quizzio.entity.AccountEntity;
 import de.firecreeper82.quizzio.entity.SessionEntity;
@@ -11,7 +12,6 @@ import de.firecreeper82.quizzio.repository.VerificationRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Random;
 
 @Service
@@ -20,11 +20,13 @@ public class VerificationService {
     private final VerificationRepository verificationRepository;
     private final SessionRepository sessionRepository;
     private final AccountRepository accountRepository;
+    private final MailService mailService;
 
-    public VerificationService(VerificationRepository verificationRepository, SessionRepository sessionRepository, AccountRepository accountRepository) {
+    public VerificationService(VerificationRepository verificationRepository, SessionRepository sessionRepository, AccountRepository accountRepository, MailService mailService) {
         this.verificationRepository = verificationRepository;
         this.sessionRepository = sessionRepository;
         this.accountRepository = accountRepository;
+        this.mailService = mailService;
     }
 
     public boolean isValidVerification(String accountId, String verificationCode) throws QuizzioException {
@@ -63,18 +65,23 @@ public class VerificationService {
         return entity;
     }
 
-    public void createVerification(String userName) {
+    public void createVerification(String userName, String email) throws MailjetException {
         VerificationEntity entity = new VerificationEntity();
         entity.setUserId(userName);
         entity.setVerificationCode(createVerificationCode());
         verificationRepository.save(entity);
+
+        mailService.sendMail(
+                "quizzio@outlook.com",
+                "Quizzio",
+                email,
+                "Quizzio User",
+                "Verification",
+                "Here is your verification Code: " + entity.getVerificationCode()
+        );
     }
 
     private String createVerificationCode() {
-        byte[] array = new byte[7];
-        new Random().nextBytes(array);
-
-        return new String(array, StandardCharsets.UTF_8);
+        return new Random().nextInt(10000000, 100000000) + "";
     }
-
 }

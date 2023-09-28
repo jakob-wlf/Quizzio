@@ -1,5 +1,6 @@
 package de.firecreeper82.quizzio.service;
 
+import com.mailjet.client.errors.MailjetException;
 import de.firecreeper82.quizzio.data.AccountStatus;
 import de.firecreeper82.quizzio.entity.AccountEntity;
 import de.firecreeper82.quizzio.exception.QuizzioException;
@@ -24,7 +25,7 @@ public class AccountService {
         this.verificationService = verificationService;
     }
 
-    public void createAccount(AccountCreateRequest request) throws QuizzioException {
+    public void createAccount(AccountCreateRequest request) throws QuizzioException, MailjetException {
         if(accountRepository.findById(request.userName()).isPresent())
             throw new QuizzioException("This userid already exists.", HttpStatus.CONFLICT);
 
@@ -52,6 +53,9 @@ public class AccountService {
 
         accountRepository.save(entity);
 
-        verificationService.createVerification(entity.getUserName());
+        verificationService.createVerification(
+                entity.getUserName(),
+                entity.getEmail()
+        );
     }
 }

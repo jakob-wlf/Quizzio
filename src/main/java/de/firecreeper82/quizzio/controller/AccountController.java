@@ -1,5 +1,6 @@
 package de.firecreeper82.quizzio.controller;
 
+import com.mailjet.client.errors.MailjetException;
 import de.firecreeper82.quizzio.entity.AccountEntity;
 import de.firecreeper82.quizzio.entity.SessionEntity;
 import de.firecreeper82.quizzio.exception.QuizzioException;
@@ -47,7 +48,7 @@ public class AccountController {
             @RequestParam String email,
             @RequestParam String displayName,
             @RequestParam String password
-    ) throws QuizzioException {
+    ) throws QuizzioException, MailjetException {
 
         accountService.createAccount(
                 new AccountCreateRequest(
