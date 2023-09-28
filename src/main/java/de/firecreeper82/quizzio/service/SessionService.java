@@ -61,4 +61,12 @@ public class SessionService {
 
         sessionRepository.delete(entity);
     }
+
+    public SessionResponse verifySession(String sessionId) throws QuizzioException {
+        SessionEntity entity = sessionRepository
+                .findById(sessionId)
+                .orElseThrow(() ->
+                        new QuizzioException("Session with id " + sessionId + " not found.", HttpStatus.NOT_FOUND));
+        return mapToResponse(entity);
+    }
 }

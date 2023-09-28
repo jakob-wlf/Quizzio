@@ -2,11 +2,15 @@ package de.firecreeper82.quizzio.controller;
 
 import de.firecreeper82.quizzio.entity.SetEntity;
 import de.firecreeper82.quizzio.exception.QuizzioException;
+import de.firecreeper82.quizzio.model.SessionResponse;
 import de.firecreeper82.quizzio.model.SetResponse;
+import de.firecreeper82.quizzio.model.TrainingResponse;
 import de.firecreeper82.quizzio.repository.AccountRepository;
 import de.firecreeper82.quizzio.repository.FlashcardRepository;
 import de.firecreeper82.quizzio.repository.SetRepository;
+import de.firecreeper82.quizzio.service.SessionService;
 import de.firecreeper82.quizzio.service.SetService;
+import de.firecreeper82.quizzio.service.TrainingService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,16 +24,25 @@ public class SetController {
     private final FlashcardRepository flashcardRepository;
     private final AccountRepository accountRepository;
     private final SetService setService;
+    private final TrainingService trainingService;
+    private final SessionService sessionService;
 
-    public SetController(SetRepository setRepository, FlashcardRepository flashcardRepository, AccountRepository accountRepository, SetService setService) {
+    public SetController(SetRepository setRepository, FlashcardRepository flashcardRepository, AccountRepository accountRepository, SetService setService, TrainingService trainingService, SessionService sessionService) {
         this.setRepository = setRepository;
         this.flashcardRepository = flashcardRepository;
         this.accountRepository = accountRepository;
         this.setService = setService;
+        this.trainingService = trainingService;
+        this.sessionService = sessionService;
     }
 
-    @PostMapping("/sets/add")
-    public @ResponseBody SetResponse createSet(@RequestParam String name, @RequestParam String userId) throws QuizzioException {
+    //TODO: change PathVariables to RequestParameters when there is more than one
+
+    @PostMapping("/sessions/{sessionId}/sets/add")
+    public @ResponseBody SetResponse createSet(@PathVariable String sessionId, @RequestParam String name) throws QuizzioException {
+        SessionResponse session = sessionService.verifySession(sessionId);
+        String userId = session.accountId();
+
         SetEntity entity = new SetEntity();
         entity.setName(name);
         entity.setId(UUID.randomUUID().toString());
@@ -50,12 +63,17 @@ public class SetController {
         );
     }
 
-    @PutMapping("/sets/{id}")
-    public @ResponseBody SetResponse changeSet(@PathVariable String id, @RequestParam(required = false) String name) throws QuizzioException {
+    @PutMapping("/sessions/{sessionId}/sets/{id}")
+    public @ResponseBody SetResponse changeSet(@PathVariable String sessionId, @PathVariable String id, @RequestParam(required = false) String name) throws QuizzioException {
         SetEntity entity = setRepository
                 .findById(id)
                 .orElseThrow(() ->
                         new QuizzioException("Set with id " + id + " not found..", HttpStatus.BAD_REQUEST));
+
+        SessionResponse session = sessionService.verifySession(sessionId);
+
+        if(!session.accountId().equals(entity.getUserId()))
+            throw new QuizzioException("Unauthorized to change set belonging to account with user name " + entity.getUserId() + ".", HttpStatus.UNAUTHORIZED);
 
         if(name != null)
             entity.setName(name);
@@ -63,12 +81,17 @@ public class SetController {
         return setService.createSetResponse(entity);
     }
 
-    @DeleteMapping("/sets/{id}")
-    public @ResponseBody HttpStatus deleteSet(@PathVariable String id) throws QuizzioException {
+    @DeleteMapping("/sessions/{sessionId}/sets/{id}")
+    public @ResponseBody HttpStatus deleteSet(@PathVariable String sessionId, @PathVariable String id) throws QuizzioException {
         SetEntity entity = setRepository
                 .findById(id)
                 .orElseThrow(() ->
                         new QuizzioException("Set with id " + id + " not found.", HttpStatus.BAD_REQUEST));
+
+        SessionResponse session = sessionService.verifySession(sessionId);
+
+        if(!session.accountId().equals(entity.getUserId()))
+            throw new QuizzioException("Unauthorized to change set belonging to account with user name " + entity.getUserId() + ".", HttpStatus.UNAUTHORIZED);
 
         flashcardRepository
                 .deleteAll(flashcardRepository
@@ -85,5 +108,20 @@ public class SetController {
                 .orElseThrow(() ->
                         new QuizzioException("Set with id " + id + " not found.", HttpStatus.BAD_REQUEST));
         return setService.createSetResponse(entity);
+    }
+
+    @PostMapping("/trainings/start")
+    public @ResponseBody TrainingResponse startTraining(@RequestParam String sessionId, @RequestParam String setId) throws QuizzioException {
+        SessionResponse session = sessionService.verifySession(sessionId);
+        SetResponse set = setService.verifySet(setId);
+
+        return trainingService.startTraining(session, set);
+    }
+
+    @PostMapping("/trainings/answer")
+    public @ResponseBody TrainingResponse answer(@RequestParam String sessionId, @RequestParam String answer) throws QuizzioException {
+        SessionResponse session = sessionService.verifySession(sessionId);
+
+        return trainingService.train(session, answer);
     }
 }

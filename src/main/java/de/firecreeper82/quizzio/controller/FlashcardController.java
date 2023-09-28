@@ -25,6 +25,8 @@ public class FlashcardController {
         this.setService = setService;
     }
 
+    //TODO: require session to change Flashcards
+
     @PostMapping("/flashcards/add/{setId}")
     public @ResponseBody SetResponse createFlashcard(@RequestParam String key, @RequestParam String value, @PathVariable String setId) throws QuizzioException {
         FlashcardEntity entity = new FlashcardEntity();
