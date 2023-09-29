@@ -22,7 +22,10 @@ public class TrainingService {
         trainings = new ArrayList<>();
     }
 
-    public TrainingResponse startTraining(SessionResponse session, SetResponse set) {
+    public TrainingResponse startTraining(SessionResponse session, SetResponse set) throws QuizzioException {
+        if(set.cards().isEmpty())
+            throw new QuizzioException("Cannot train with empty set.", HttpStatus.BAD_REQUEST);
+
         trainings.removeIf(trainingResponse -> trainingResponse.userName().equals(session.accountId()));
 
         List<FlashcardResponse> cards = new ArrayList<>(set.cards());
@@ -36,8 +39,10 @@ public class TrainingService {
                 set.id(),
                 List.of(),
                 currentCard,
-                cards
-
+                cards,
+                0,
+                cards.isEmpty(),
+                 false
         );
 
         trainings.add(trainingResponse);
@@ -50,7 +55,7 @@ public class TrainingService {
                 .filter(trainingResponse -> trainingResponse.userName().equals(session.accountId()))
                 .findFirst()
                 .orElseThrow(() ->
-                        new QuizzioException("Set for session with id " + session.sessionId() + " not found.", HttpStatus.NOT_FOUND));
+                        new QuizzioException("Training for session with id " + session.sessionId() + " not found.", HttpStatus.NOT_FOUND));
 
         trainings.remove(training);
 
@@ -59,6 +64,9 @@ public class TrainingService {
         List<FlashcardResponse> notLearned = new ArrayList<>(training.notLearned());
         AnswerStatus answerStatus;
 
+        int wrongAnswers = training.wrongAnswers();
+        boolean lastCard = training.lastCard();
+
         if(answer.equalsIgnoreCase(learnedCard.value())) {
             learned.add(learnedCard);
             answerStatus = AnswerStatus.CORRECT;
@@ -66,10 +74,14 @@ public class TrainingService {
         else {
             notLearned.add(learnedCard);
             answerStatus = AnswerStatus.INCORRECT;
+            wrongAnswers++;
         }
 
-        FlashcardResponse currentCard = notLearned.get(new Random().nextInt(notLearned.size()));
-        notLearned.remove(currentCard);
+        FlashcardResponse currentCard = null;
+        if(!notLearned.isEmpty()) {
+            currentCard = notLearned.get(new Random().nextInt(notLearned.size()));
+            notLearned.remove(currentCard);
+        }
 
         training = new TrainingResponse(
                 training.id(),
@@ -78,10 +90,15 @@ public class TrainingService {
                 training.setId(),
                 learned,
                 currentCard,
-                notLearned
+                notLearned,
+                wrongAnswers,
+                notLearned.isEmpty(),
+                lastCard
         );
 
-        trainings.add(training);
+        if(!lastCard)
+            trainings.add(training);
+
         return training;
     }
 }

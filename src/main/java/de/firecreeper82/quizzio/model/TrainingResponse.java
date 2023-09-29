@@ -12,6 +12,9 @@ public record TrainingResponse(
         String setId,
         List<FlashcardResponse> learned,
         FlashcardResponse currentCard,
-        List<FlashcardResponse> notLearned
+        List<FlashcardResponse> notLearned,
+        int wrongAnswers,
+        boolean lastCard,
+        boolean finished
 ) {
 }

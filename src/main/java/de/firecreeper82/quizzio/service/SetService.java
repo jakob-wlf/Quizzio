@@ -38,6 +38,23 @@ public class SetService {
         );
     }
 
+    public void verifyIfAuthorizedToChangeSet(String accountId, SetResponse set) throws QuizzioException {
+        if(!accountId.equals(set.userId()))
+            throw new QuizzioException("Unauthorized to change set belonging to account with user name " + set.userId() + ".", HttpStatus.UNAUTHORIZED);
+    }
+
+    public void verifyIfAuthorizedToChangeSet(String accountId, SetEntity set) throws QuizzioException {
+        if(!accountId.equals(set.getUserId()))
+            throw new QuizzioException("Unauthorized to change set belonging to account with user name " + set.getUserId() + ".", HttpStatus.UNAUTHORIZED);
+    }
+
+    public SetEntity getSetEntity(String id) throws QuizzioException {
+        return setRepository
+                .findById(id)
+                .orElseThrow(() ->
+                        new QuizzioException("Set with id " + id + " not found.", HttpStatus.BAD_REQUEST));
+    }
+
     public SetResponse verifySet(String setId) throws QuizzioException {
         SetEntity entity = setRepository
                 .findById(setId)
