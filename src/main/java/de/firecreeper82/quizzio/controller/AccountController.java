@@ -2,24 +2,17 @@ package de.firecreeper82.quizzio.controller;
 
 import com.mailjet.client.errors.MailjetException;
 import de.firecreeper82.quizzio.entity.AccountEntity;
-import de.firecreeper82.quizzio.entity.SessionEntity;
 import de.firecreeper82.quizzio.exception.QuizzioException;
 import de.firecreeper82.quizzio.model.AccountResponse;
+import de.firecreeper82.quizzio.model.CredentialsResponse;
 import de.firecreeper82.quizzio.model.SessionResponse;
 import de.firecreeper82.quizzio.repository.AccountRepository;
-import de.firecreeper82.quizzio.repository.SessionRepository;
-import de.firecreeper82.quizzio.repository.SetRepository;
 import de.firecreeper82.quizzio.request.AccountCreateRequest;
-import de.firecreeper82.quizzio.service.AccountService;
-import de.firecreeper82.quizzio.service.SessionService;
-import de.firecreeper82.quizzio.service.SetService;
-import de.firecreeper82.quizzio.service.VerificationService;
+import de.firecreeper82.quizzio.service.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.stream.Collectors;
 
 @Controller
 public class AccountController {
@@ -27,19 +20,17 @@ public class AccountController {
     private final AccountService accountService;
     private final SessionService sessionService;
     private final AccountRepository accountRepository;
-    private final SessionRepository sessionRepository;
-    private final SetRepository setRepository;
-    private final SetService setService;
     private final VerificationService verificationService;
+    private final RegexService regexService;
+    private final SecurityService securityService;
 
-    public AccountController(AccountService accountService, SessionService sessionService, AccountRepository accountRepository, SessionRepository sessionRepository, SetRepository setRepository, SetService setService, VerificationService verificationService) {
+    public AccountController(AccountService accountService, SessionService sessionService, AccountRepository accountRepository, VerificationService verificationService, RegexService regexService, SecurityService securityService) {
         this.accountService = accountService;
         this.sessionService = sessionService;
         this.accountRepository = accountRepository;
-        this.sessionRepository = sessionRepository;
-        this.setRepository = setRepository;
-        this.setService = setService;
         this.verificationService = verificationService;
+        this.regexService = regexService;
+        this.securityService = securityService;
     }
 
     @PostMapping("/accounts/create")
@@ -76,47 +67,53 @@ public class AccountController {
 
     @PostMapping("/sessions/{sessionId}/verify/{verificationCode}")
     public @ResponseBody AccountResponse verifyAccount(@PathVariable String sessionId, @PathVariable String verificationCode) throws QuizzioException {
-        return mapToResponse(verificationService.verifyAccount(sessionId, verificationCode));
+        return accountService.mapToResponse(verificationService.verifyAccount(sessionId, verificationCode));
     }
 
     @GetMapping("/accounts/{accountId}")
     public @ResponseBody AccountResponse getAccountInformation(@PathVariable String accountId) throws QuizzioException {
-        AccountEntity entity = accountRepository
-                .findById(accountId)
-                .orElseThrow(() ->
-                        new QuizzioException("User with username " + accountId + " not found.", HttpStatus.NOT_FOUND));
-
-        return mapToResponse(entity);
+        return accountService.getAccountById(accountId);
     }
 
     @GetMapping("/sessions/{sessionId}")
     public @ResponseBody AccountResponse getSessionInformation(@PathVariable String sessionId) throws QuizzioException {
-        SessionEntity session = sessionRepository
-                .findById(sessionId)
-                .orElseThrow(() ->
-                        new QuizzioException("Session with id " + sessionId + " not found.", HttpStatus.NOT_FOUND));
+        SessionResponse session = sessionService.verifySession(sessionId);
 
-        String accountId = session.getAccountId();
+        String accountId = session.accountId();
 
-        AccountEntity entity = accountRepository
-                .findById(accountId)
-                .orElseThrow(() ->
-                        new QuizzioException("User with username " + accountId + " not found.", HttpStatus.NOT_FOUND));
-
-        return mapToResponse(entity);
+        return accountService.getAccountById(accountId);
     }
 
-    private AccountResponse mapToResponse(AccountEntity entity) {
-        return new AccountResponse(
-                entity.getUserName(),
-                entity.getDisplayName(),
-                entity.getEmail(),
-                entity.getStatus(),
-                setRepository.findAllByUserId(entity.getUserName())
-                        .stream()
-                        .map(setService::createSetResponse)
-                        .collect(Collectors.toList())
-        );
+
+    @PutMapping("/sessions/{sessionId}/changeName")
+    public @ResponseBody AccountResponse changeDisplayName(@PathVariable String sessionId, @RequestParam String displayName) throws QuizzioException {
+        SessionResponse session = sessionService.verifySession(sessionId);
+
+        AccountEntity entity = accountService.getAccountEntityById(session.accountId());
+
+        regexService.checkForValidDisplayName(displayName);
+
+        entity.setDisplayName(displayName);
+        accountRepository.save(entity);
+
+        return accountService.mapToResponse(entity);
+    }
+
+    @PutMapping("/sessions/{sessionId}/changePassword")
+    public ResponseEntity<String> changePassword(@PathVariable String sessionId, @RequestParam String oldPassword, @RequestParam String newPassword) throws QuizzioException {
+        SessionResponse session = sessionService.verifySession(sessionId);
+        AccountEntity entity = accountService.getAccountEntityById(session.accountId());
+
+        securityService.verifyCredentials(entity, oldPassword);
+
+        CredentialsResponse credentials = securityService.createCredentials(newPassword);
+        entity.setPassword(credentials.hashedPassword());
+        entity.setSalt(credentials.salt());
+
+        accountRepository.save(entity);
+
+        return ResponseEntity.status(HttpStatus.OK).body("Successfully changed the password");
+
     }
 
 }

@@ -1,5 +1,7 @@
 package de.firecreeper82.quizzio.service;
 
+import de.firecreeper82.quizzio.exception.QuizzioException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -26,5 +28,24 @@ public class RegexService {
     public boolean isValidEmail(String email) {
         return email.matches(EMAIL_REGEX);
     }
+
+    public void checkForValidDisplayName(String displayName) throws QuizzioException {
+        if(isInvalidUsername(displayName))
+            throw new QuizzioException("Invalid display name.", HttpStatus.BAD_REQUEST);
+    }
+    public void checkForValidUsername(String userName) throws QuizzioException {
+        if(isInvalidUsername(userName))
+            throw new QuizzioException("Invalid username.", HttpStatus.BAD_REQUEST);
+    }
+
+    public void checkForValidPassword(String password) throws QuizzioException {
+        if(!isValidPassword(password))
+            throw new QuizzioException("Invalid password.", HttpStatus.BAD_REQUEST);
+    }
+
+    public void checkForValidEmail(String email) throws QuizzioException {
+        if(!isValidPassword(email))
+            throw new QuizzioException("Invalid email.", HttpStatus.BAD_REQUEST);    }
+
 
 }

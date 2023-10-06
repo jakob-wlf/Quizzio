@@ -35,11 +35,12 @@ public class SecurityService {
         }
     }
 
-    public boolean verifyCredentials(AccountEntity entity, String password) throws QuizzioException {
+    public void verifyCredentials(AccountEntity entity, String password) throws QuizzioException {
         byte[] salt = entity.getSalt();
         String hashedPassword = hashPassword(password, salt);
 
-        return (hashedPassword.equals(entity.getPassword()));
+        if (!hashedPassword.equals(entity.getPassword()))
+            throw new QuizzioException("Invalid Credentials.", HttpStatus.UNAUTHORIZED);
     }
 
     public CredentialsResponse createCredentials(String password) throws QuizzioException {

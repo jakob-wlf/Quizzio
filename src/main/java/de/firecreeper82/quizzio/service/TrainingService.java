@@ -41,8 +41,8 @@ public class TrainingService {
                 currentCard,
                 cards,
                 0,
-                cards.isEmpty(),
                  false
+
         );
 
         trainings.add(trainingResponse);
@@ -65,7 +65,6 @@ public class TrainingService {
         AnswerStatus answerStatus;
 
         int wrongAnswers = training.wrongAnswers();
-        boolean lastCard = training.lastCard();
 
         if(answer.equalsIgnoreCase(learnedCard.value())) {
             learned.add(learnedCard);
@@ -92,11 +91,10 @@ public class TrainingService {
                 currentCard,
                 notLearned,
                 wrongAnswers,
-                notLearned.isEmpty(),
-                lastCard
+                currentCard == null
         );
 
-        if(!lastCard)
+        if(!training.finished())
             trainings.add(training);
 
         return training;

@@ -15,22 +15,20 @@ public class SessionService {
     private final AccountRepository accountRepository;
     private final SessionRepository sessionRepository;
     private final SecurityService securityService;
+    private final AccountService accountService;
 
-    public SessionService(AccountRepository accountRepository, SessionRepository sessionRepository, SecurityService securityService) {
+    public SessionService(AccountRepository accountRepository, SessionRepository sessionRepository, SecurityService securityService, AccountService accountService) {
         this.accountRepository = accountRepository;
         this.sessionRepository = sessionRepository;
         this.securityService = securityService;
+        this.accountService = accountService;
     }
 
     public SessionResponse login(String userName, String password) throws QuizzioException {
 
-        AccountEntity entity = accountRepository
-                .findById(userName)
-                .orElseThrow(() ->
-                new QuizzioException("User with username " + userName + " not found.", HttpStatus.NOT_FOUND));
+        AccountEntity entity = accountService.getAccountEntityById(userName);
 
-        if(!securityService.verifyCredentials(entity, password))
-            throw new QuizzioException("Invalid Credentials.", HttpStatus.UNAUTHORIZED);
+        securityService.verifyCredentials(entity, password);
 
         return createSession(userName);
     }

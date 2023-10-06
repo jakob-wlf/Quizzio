@@ -14,7 +14,6 @@ public record TrainingResponse(
         FlashcardResponse currentCard,
         List<FlashcardResponse> notLearned,
         int wrongAnswers,
-        boolean lastCard,
         boolean finished
 ) {
 }
