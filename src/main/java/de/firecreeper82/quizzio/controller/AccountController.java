@@ -6,6 +6,7 @@ import de.firecreeper82.quizzio.exception.QuizzioException;
 import de.firecreeper82.quizzio.model.AccountResponse;
 import de.firecreeper82.quizzio.model.CredentialsResponse;
 import de.firecreeper82.quizzio.model.SessionResponse;
+import de.firecreeper82.quizzio.model.UserResponse;
 import de.firecreeper82.quizzio.repository.AccountRepository;
 import de.firecreeper82.quizzio.request.AccountCreateRequest;
 import de.firecreeper82.quizzio.service.*;
@@ -58,25 +59,25 @@ public class AccountController {
         return sessionService.login(userName, password);
     }
 
-    @PostMapping("/accounts/logout/{sessionId}")
-    public ResponseEntity<String> logout(@PathVariable String sessionId) throws QuizzioException {
+    @PostMapping("/accounts/logout/")
+    public ResponseEntity<String> logout(@RequestParam String sessionId) throws QuizzioException {
         sessionService.logout(sessionId);
 
         return ResponseEntity.status(HttpStatus.CREATED).body("Logged out successfully.");
     }
 
-    @PostMapping("/sessions/{sessionId}/verify/{verificationCode}")
-    public @ResponseBody AccountResponse verifyAccount(@PathVariable String sessionId, @PathVariable String verificationCode) throws QuizzioException {
+    @PostMapping("/accounts/verify/{verificationCode}")
+    public @ResponseBody AccountResponse verifyAccount(@RequestParam String sessionId, @PathVariable String verificationCode) throws QuizzioException {
         return accountService.mapToResponse(verificationService.verifyAccount(sessionId, verificationCode));
     }
 
     @GetMapping("/accounts/{accountId}")
-    public @ResponseBody AccountResponse getAccountInformation(@PathVariable String accountId) throws QuizzioException {
-        return accountService.getAccountById(accountId);
+    public @ResponseBody UserResponse getAccountInformation(@PathVariable String accountId) throws QuizzioException {
+        return accountService.getUserById(accountId);
     }
 
-    @GetMapping("/sessions/{sessionId}")
-    public @ResponseBody AccountResponse getSessionInformation(@PathVariable String sessionId) throws QuizzioException {
+    @GetMapping("/account")
+    public @ResponseBody AccountResponse getSessionInformation(@RequestParam String sessionId) throws QuizzioException {
         SessionResponse session = sessionService.verifySession(sessionId);
 
         String accountId = session.accountId();
@@ -84,9 +85,8 @@ public class AccountController {
         return accountService.getAccountById(accountId);
     }
 
-
-    @PutMapping("/sessions/{sessionId}/changeName")
-    public @ResponseBody AccountResponse changeDisplayName(@PathVariable String sessionId, @RequestParam String displayName) throws QuizzioException {
+    @PutMapping("/accounts/changeName")
+    public @ResponseBody AccountResponse changeDisplayName(@RequestParam String sessionId, @RequestParam String displayName) throws QuizzioException {
         SessionResponse session = sessionService.verifySession(sessionId);
 
         AccountEntity entity = accountService.getAccountEntityById(session.accountId());
@@ -113,7 +113,6 @@ public class AccountController {
         accountRepository.save(entity);
 
         return ResponseEntity.status(HttpStatus.OK).body("Successfully changed the password");
-
     }
 
 }

@@ -21,12 +21,12 @@ public class RegexService {
         return !username.matches(USERNAME_REGEX);
     }
 
-    public boolean isValidPassword(String password) {
-        return password.matches(PASSWORD_REGEX);
+    public boolean isInvalidPassword(String password) {
+        return !password.matches(PASSWORD_REGEX);
     }
 
-    public boolean isValidEmail(String email) {
-        return email.matches(EMAIL_REGEX);
+    public boolean isInvalidEmail(String email) {
+        return !email.matches(EMAIL_REGEX);
     }
 
     public void checkForValidDisplayName(String displayName) throws QuizzioException {
@@ -39,12 +39,12 @@ public class RegexService {
     }
 
     public void checkForValidPassword(String password) throws QuizzioException {
-        if(!isValidPassword(password))
+        if(isInvalidPassword(password))
             throw new QuizzioException("Invalid password.", HttpStatus.BAD_REQUEST);
     }
 
     public void checkForValidEmail(String email) throws QuizzioException {
-        if(!isValidPassword(email))
+        if(isInvalidEmail(email))
             throw new QuizzioException("Invalid email.", HttpStatus.BAD_REQUEST);    }
 
 

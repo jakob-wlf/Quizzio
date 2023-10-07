@@ -4,7 +4,6 @@ import de.firecreeper82.quizzio.entity.AccountEntity;
 import de.firecreeper82.quizzio.entity.SessionEntity;
 import de.firecreeper82.quizzio.exception.QuizzioException;
 import de.firecreeper82.quizzio.model.SessionResponse;
-import de.firecreeper82.quizzio.repository.AccountRepository;
 import de.firecreeper82.quizzio.repository.SessionRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -12,13 +11,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class SessionService {
 
-    private final AccountRepository accountRepository;
     private final SessionRepository sessionRepository;
     private final SecurityService securityService;
     private final AccountService accountService;
 
-    public SessionService(AccountRepository accountRepository, SessionRepository sessionRepository, SecurityService securityService, AccountService accountService) {
-        this.accountRepository = accountRepository;
+    public SessionService(SessionRepository sessionRepository, SecurityService securityService, AccountService accountService) {
         this.sessionRepository = sessionRepository;
         this.securityService = securityService;
         this.accountService = accountService;

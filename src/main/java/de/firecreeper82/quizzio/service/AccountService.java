@@ -3,9 +3,11 @@ package de.firecreeper82.quizzio.service;
 import com.mailjet.client.errors.MailjetException;
 import de.firecreeper82.quizzio.data.AccountStatus;
 import de.firecreeper82.quizzio.entity.AccountEntity;
+import de.firecreeper82.quizzio.entity.SetEntity;
 import de.firecreeper82.quizzio.exception.QuizzioException;
 import de.firecreeper82.quizzio.model.AccountResponse;
 import de.firecreeper82.quizzio.model.CredentialsResponse;
+import de.firecreeper82.quizzio.model.UserResponse;
 import de.firecreeper82.quizzio.repository.AccountRepository;
 import de.firecreeper82.quizzio.repository.SetRepository;
 import de.firecreeper82.quizzio.request.AccountCreateRequest;
@@ -22,15 +24,13 @@ public class AccountService {
     private final SecurityService securityService;
     private final VerificationService verificationService;
     private final SetRepository setRepository;
-    private final SetService setService;
 
-    public AccountService(AccountRepository accountRepository, RegexService regexService, SecurityService securityService, VerificationService verificationService, SetRepository setRepository, SetService setService) {
+    public AccountService(AccountRepository accountRepository, RegexService regexService, SecurityService securityService, VerificationService verificationService, SetRepository setRepository) {
         this.accountRepository = accountRepository;
         this.regexService = regexService;
         this.securityService = securityService;
         this.verificationService = verificationService;
         this.setRepository = setRepository;
-        this.setService = setService;
     }
 
     public void createAccount(AccountCreateRequest request) throws QuizzioException, MailjetException {
@@ -66,12 +66,28 @@ public class AccountService {
 
     public AccountResponse getAccountById(String accountId) throws QuizzioException {
         return mapToResponse(
-                accountRepository
-                .findById(accountId)
-                .orElseThrow(() ->
-                        new QuizzioException("User with username " + accountId + " not found.", HttpStatus.NOT_FOUND))
+                getAccountEntityById(accountId)
         );
     }
+
+    public UserResponse getUserById(String accountId) throws QuizzioException {
+        return mapToUserResponse(
+                getAccountEntityById(accountId)
+        );
+    }
+
+    private UserResponse mapToUserResponse(AccountEntity entity) {
+
+        return new UserResponse(
+                entity.getUserName(),
+                entity.getDisplayName(),
+                setRepository.findAllByUserId(entity.getUserName())
+                        .stream()
+                        .map(SetEntity::getId)
+                        .collect(Collectors.toList())
+        );
+    }
+
 
     public AccountEntity getAccountEntityById(String accountId) throws QuizzioException {
         return accountRepository
@@ -88,7 +104,7 @@ public class AccountService {
                 entity.getStatus(),
                 setRepository.findAllByUserId(entity.getUserName())
                         .stream()
-                        .map(setService::createSetResponse)
+                        .map(SetEntity::getId)
                         .collect(Collectors.toList())
         );
     }

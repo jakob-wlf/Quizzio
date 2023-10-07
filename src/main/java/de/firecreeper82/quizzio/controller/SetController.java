@@ -16,7 +16,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 public class SetController {
@@ -110,5 +112,11 @@ public class SetController {
         SessionResponse session = sessionService.verifySession(sessionId);
 
         return trainingService.train(session, answer);
+    }
+
+    @GetMapping("/sets/search/{tag}")
+    public @ResponseBody List<SetResponse> searchSets(@PathVariable String tag) {
+        List<SetEntity> sets = setRepository.findAllBySetName(tag);
+        return sets.stream().map(setService::createSetResponse).collect(Collectors.toList());
     }
 }

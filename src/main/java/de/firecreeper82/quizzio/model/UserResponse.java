@@ -1,14 +1,10 @@
 package de.firecreeper82.quizzio.model;
 
-import de.firecreeper82.quizzio.data.AccountStatus;
-
 import java.util.List;
 
-public record AccountResponse(
+public record UserResponse(
         String userName,
         String displayName,
-        String email,
-        AccountStatus status,
         List<String> sets
 ) {
 }

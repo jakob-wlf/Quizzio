@@ -11,4 +11,7 @@ public interface SetRepository extends CrudRepository<SetEntity, String> {
     @Query("SELECT e FROM SetEntity e WHERE e.userId = :userId")
     List<SetEntity> findAllByUserId(String userId);
 
+    @Query("SELECT e FROM SetEntity e WHERE e.name = :setName")
+    List<SetEntity> findAllBySetName(String setName);
+
 }
