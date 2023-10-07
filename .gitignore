@@ -33,4 +33,4 @@ build/
 .vscode/
 
 ### Other ###
-src/main/resources/apiCredentials.txt
+apiCredentials.txt
